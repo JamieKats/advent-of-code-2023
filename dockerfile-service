@@ -1,0 +1,10 @@
+# Step 1 build
+FROM golang:alpine3.19 AS build
+WORKDIR /src
+COPY . .
+RUN go build -o /out/day_1 ./day_1
+
+# Step 2: Execute
+FROM alpine:latest
+WORKDIR /app
+COPY --from=build /out/day_1 .

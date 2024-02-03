@@ -1,6 +1,5 @@
-all: bin/example
-.PHONY: bin/example
-bin/example:
+all: day_1
+.PHONY: aoc
+day_1:
 	@docker build . --target bin \
-	--output bin/ \
-	--platform local
+	--output ./day_1/out/

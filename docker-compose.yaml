@@ -1,0 +1,11 @@
+version: "3.9"
+services:
+  aoc23:
+    build:
+      dockerfile: Dockerfile
+      context: .
+      target: dev
+    # container_name: aoc23
+    image: aoc23
+    volumes:
+      - .:/opt/app/api
