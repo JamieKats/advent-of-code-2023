@@ -9,10 +9,11 @@ import (
 )
 
 type card struct {
-	cardNum        int
-	myNumbers      []int
-	winningNumbers []int
-	score          int
+	cardNum            int
+	myNumbers          []int
+	winningNumbers     []int
+	numMatchingNumbers int
+	score              int
 }
 
 // Define generic Map function type
@@ -38,11 +39,25 @@ func main() {
 	split_data := strings.Split(string(data), "\n")
 
 	var sum int
+	var cards []card
 	for _, line := range split_data {
 		decodedCard := decodeCard(line)
 		sum += decodedCard.score
+		cards = append(cards, decodedCard)
 	}
-	fmt.Printf("Score: %d\n", sum)
+	fmt.Printf("Part 1 score: %d\n", sum)
+	fmt.Printf("%v\n", cards)
+
+	// part2CheckCard starts at one card and recursively finds all the copies of other cards it generates
+	// you need to loop through all the cards and apply part2CheckCard to each to find all the
+	// copies for all the originals
+	var part2Score int
+	for _, card := range cards {
+		// fmt.Printf("Checking card %d\n", card.cardNum)
+		part2Score += part2CheckCard(cards, card.cardNum, -1)
+	}
+
+	fmt.Printf("Part 2 score: %d\n", part2Score)
 
 	// var digitsFound []numInfo
 	// gearsFound := make(map[string][]int)
@@ -72,15 +87,16 @@ func main() {
 func decodeCard(cardLine string) card {
 	var decodedCard card
 	split_data := strings.Split(string(cardLine), ":")
-	decodedCard.cardNum, _ = strconv.Atoi(strings.Split(split_data[0], " ")[1])
+	cardNumInfo := strings.Split(split_data[0], " ")
+	decodedCard.cardNum, _ = strconv.Atoi(cardNumInfo[len(cardNumInfo)-1])
 
 	winningNumbersRawString := strings.Split(split_data[1], "|")[0]
 	winningNumbersRawString = strings.TrimSpace(winningNumbersRawString)
 	winningNumbersRaw := strings.Split(winningNumbersRawString, " ")
 	winningNumbers := make([]int, len(winningNumbersRaw))
 
-	fmt.Println(winningNumbersRaw)
-	fmt.Println(len(winningNumbersRaw))
+	// fmt.Println(winningNumbersRaw)
+	// fmt.Println(len(winningNumbersRaw))
 	for i, num := range winningNumbersRaw {
 		winningNumbers[i], _ = strconv.Atoi(num)
 	}
@@ -93,8 +109,8 @@ func decodeCard(cardLine string) card {
 	for i, num := range myNumbersRaw {
 		myNumbers[i], _ = strconv.Atoi(num)
 	}
-	fmt.Println(myNumbersRaw)
-	fmt.Println(len(myNumbersRaw))
+	// fmt.Println(myNumbersRaw)
+	// fmt.Println(len(myNumbersRaw))
 	decodedCard.winningNumbers = winningNumbers
 	decodedCard.myNumbers = myNumbers
 
@@ -106,7 +122,8 @@ func decodeCard(cardLine string) card {
 			score = append(score, winningNum)
 		}
 	}
-	fmt.Printf("winning nums: %v\n", score)
+	// fmt.Printf("winning nums: %v\n", score)
+	decodedCard.numMatchingNumbers = len(score)
 	decodedCard.score = int(math.Pow(2, float64(len(score)-1)))
 	return decodedCard
 }
@@ -128,6 +145,31 @@ func removeSpace(input []int) []int {
 		}
 	}
 	return filteredSlice
+}
+
+func part2CheckCard(cards []card, cardNum int, fromCard int) int {
+	// fmt.Println()
+	// Get num of matches for card
+	numMatches := cards[cardNum-1].numMatchingNumbers
+
+	// base case
+	if numMatches == 0 {
+		// fmt.Printf("\t\t\tEnd card %d->%d\n", fromCard, cardNum)
+		return 1
+	}
+
+	cardCopies := cards[cardNum:int(math.Min(float64(len(cards)), float64(cardNum+numMatches)))]
+	// fmt.Printf("Card %d\n", cardNum)
+	// fmt.Printf("Slice %d:min(%d, %d)\n", cardNum, len(cards), cardNum+numMatches)
+	// fmt.Printf("Card copies: %v\n", cardCopies)
+
+	// return 0
+	// fmt.Printf("\t\t\tMiddle card %d->%d\n", fromCard, cardNum)
+	copies := 1
+	for _, cardCopy := range cardCopies {
+		copies += (part2CheckCard(cards, cardCopy.cardNum, cardNum))
+	}
+	return copies
 }
 
 // func parseDigits(line string, rowNum int, digitsFound *[]numInfo) {
