@@ -165,9 +165,9 @@ func part2CheckCard(cards []card, cardNum int, fromCard int) int {
 
 	// return 0
 	// fmt.Printf("\t\t\tMiddle card %d->%d\n", fromCard, cardNum)
-	copies := 1
+	copies := 1 // Current card needs to be included in the count
 	for _, cardCopy := range cardCopies {
-		copies += (part2CheckCard(cards, cardCopy.cardNum, cardNum))
+		copies += (part2CheckCard(cards, cardCopy.cardNum, cardNum)) // Current card + all current cards recursive children are counted for each copy
 	}
 	return copies
 }
