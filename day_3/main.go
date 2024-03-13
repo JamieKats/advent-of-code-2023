@@ -27,20 +27,28 @@ func main() {
 	split_data := strings.Split(string(data), "\n")
 
 	var digitsFound []numInfo
+	gearsFound := make(map[string][]int)
 
 	for row, lineString := range split_data {
 		parseDigits(lineString, row, &digitsFound)
 	}
-	fmt.Println(digitsFound)
 
 	var sum int
+	var gearRatios int
 	for _, digit := range digitsFound {
-		if numIsPart(digit, split_data) {
+		if numIsPart(digit, split_data, gearsFound) {
 			sum += digit.digit
 		}
-
 	}
+	// Print result gears
+	for _, v := range gearsFound {
+		if len(v) == 2 {
+			gearRatios += v[0] * v[1]
+		}
+	}
+	// Final sum and gearRatios
 	fmt.Println(sum)
+	fmt.Println(gearRatios)
 }
 
 func parseDigits(line string, rowNum int, digitsFound *[]numInfo) {
@@ -67,7 +75,7 @@ func parseDigits(line string, rowNum int, digitsFound *[]numInfo) {
 	}
 }
 
-func numIsPart(digitFound numInfo, inputArray []string) bool {
+func numIsPart(digitFound numInfo, inputArray []string, gearsFound map[string][]int) bool {
 	// perform check around each digit in the number
 	for targetCol := digitFound.col; targetCol < digitFound.col+len(fmt.Sprint(digitFound.digit)); targetCol++ {
 
@@ -92,8 +100,14 @@ func numIsPart(digitFound numInfo, inputArray []string) bool {
 				if unicode.IsDigit(rune(inputArray[row][col])) {
 					continue
 				}
-				if string(inputArray[row][col]) != "." {
-					// fmt.Printf("row: %d\tcol: %d\n", row, col)
+
+				// Character indicates number is a part number
+				currChar := string(inputArray[row][col])
+				if currChar != "." {
+					// If we found a gear add this digit to the gears found
+					if currChar == "*" {
+						gearsFound[fmt.Sprintf("%d-%d", row, col)] = append(gearsFound[fmt.Sprintf("%d-%d", row, col)], digitFound.digit)
+					}
 					return true
 				}
 			}
