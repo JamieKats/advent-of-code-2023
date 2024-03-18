@@ -16,6 +16,11 @@ type mappingRange struct {
 	rangeLength int
 }
 
+type seedRange struct {
+	start  int
+	length int
+}
+
 func main() {
 
 	// Read input
@@ -31,10 +36,30 @@ func main() {
 	seedsRaw := split_data[0]
 	seedsValuesRaw := strings.Split(seedsRaw, " ")[1:]
 	var seeds []int
-	for _, seed := range seedsValuesRaw {
-		seedVal, _ := strconv.Atoi(seed)
-		seeds = append(seeds, seedVal)
+	// Part 1 processing of seeds
+	// for _, seed := range seedsValuesRaw {
+	// 	seedVal, _ := strconv.Atoi(seed)
+	// 	seeds = append(seeds, seedVal)
+	// }
+
+	// Part 2 processing of seeds
+	var seedStart int
+	var seedLength int
+	var seedsPart2 []seedRange
+	for i, seedVal := range seedsValuesRaw {
+		if i%2 == 0 {
+			seedStart, _ = strconv.Atoi(seedVal)
+		} else {
+			seedLength, _ = strconv.Atoi(seedVal)
+			seedInfo := seedRange{
+				start:  seedStart,
+				length: seedLength,
+			}
+			seedsPart2 = append(seedsPart2, seedInfo)
+		}
 	}
+	// fmt.Println(seedsPart2)
+	// panic(21)
 
 	// Contains arrays that represent the mappings for each stage, e.g.
 	// mappings[0] is an array of all mappings for seed-to-soil
@@ -49,21 +74,8 @@ func main() {
 	for i, line := range rawMappingsInput {
 		// loop through lines and process every mapping
 		if strings.Contains(line, "to") {
-			// fmt.Println(line)
-			// fmt.Println(i)
-			// panic("23")
 			// increment current mappings value
 			for _, mappingRaw := range rawMappingsInput[i+1:] {
-				// fmt.Println(rawMappingsInput[i+1:])
-				// fmt.Println(mappingRaw)
-				// fmt.Println(j)
-				// panic("srdgf")
-
-				// for _, y := range split_data[i+2:] {
-				// 	fmt.Println(y)
-				// }
-
-				// fmt.Println(split_data[i+1:])
 				// If line is empty break
 				if mappingRaw == "" {
 					mappingIndex += 1
@@ -72,7 +84,6 @@ func main() {
 
 				// Parse raw mapping
 				mappingsSplit := strings.Split(mappingRaw, " ")
-				// fmt.Println(mappingsSplit)
 				start, _ := strconv.Atoi(mappingsSplit[1])
 				end, _ := strconv.Atoi(mappingsSplit[0])
 				srcToDest := func(x int) int { return x + (end - start) }
@@ -84,16 +95,9 @@ func main() {
 					srcToDest:   srcToDest,
 					rangeLength: rangeLength,
 				}
-				// fmt.Println(mappings[mappingIndex])
 				mappings[mappingIndex] = append(mappings[mappingIndex], parsedMappings)
-				// fmt.Println(mappings[mappingIndex])
-				// panic("wef")
 			}
 		}
-		// fmt.Println()
-		// for _, mapping := range mappings[0] {
-		// 	fmt.Printf("start: %d, end: %d, func: %v\n", mapping.start, mapping.end, mapping.srcToDest)
-		// }
 	}
 
 	// For each seed process seeds
@@ -105,6 +109,19 @@ func main() {
 		}
 	}
 	fmt.Printf("Part 1: %d\n", part1Result)
+
+	// Part 2
+	var part2Result int
+	for _, seedInfo := range seedsPart2 {
+		for seedOffset := 0; seedOffset < seedInfo.length; seedOffset++ {
+			seed := seedInfo.start + seedOffset
+			location := processSeed(seed, &mappings)
+			if location < part2Result || part2Result == 0 {
+				part2Result = location
+			}
+		}
+	}
+	fmt.Printf("Part 2: %d\n", part2Result)
 }
 
 func processSeed(seed int, mappingRangeInput *[7][]mappingRange) int {
